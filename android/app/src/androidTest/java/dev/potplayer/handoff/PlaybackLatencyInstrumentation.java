@@ -98,6 +98,10 @@ public final class PlaybackLatencyInstrumentation extends Instrumentation {
 
   @Override
   public void onStart() {
+    if ("updates".equals(arguments.getString("suite"))) {
+      UpdateChecks.run(this);
+      return;
+    }
     if ("sharing".equals(arguments.getString("suite"))) {
       new SharingChecks(this, arguments).run();
       return;
