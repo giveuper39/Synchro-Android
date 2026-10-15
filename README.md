@@ -1,44 +1,42 @@
-<p align="center"><img src="docs/assets/synchro.svg" alt="synchro · Синхро" width="100%"></p>
-<p align="center">
-  <a href="https://github.com/giveuper39/syncro-desktop/releases/latest">Скачать для Windows</a> ·
-  <a href="https://github.com/giveuper39/syncro-android/releases/latest">Скачать для Android</a>
-</p>
+<p align="center"><img src="docs/assets/Synchro.svg" alt="Synchro for Android" width="100%"></p>
+<p align="center"><a href="https://github.com/giveuper39/Synchro-Android/releases/latest">Android APK</a> · <a href="https://github.com/giveuper39/Synchro-Desktop">Windows service</a></p>
 
-Синхро связывает телефон и компьютер в одной сети. Можно уйти от ПК, продолжить фильм на телефоне и вернуть просмотр обратно по паузе.
+Продолжайте фильм с компьютера на телефоне. Пауза возвращает позицию на ПК; громкость остаётся на каждом устройстве.
 
-<p align="center"><img src="docs/assets/player.png" alt="Полноэкранный просмотр видео с компьютера" width="65%"> <img src="docs/assets/mini-player.png" alt="Видео в системном мини-плеере поверх буфера обмена" width="28%"></p>
-<p align="center"><sub>Реальные экраны текущей версии 0.3.0.</sub></p>
+<p align="center"><img src="docs/assets/player.png" alt="Полноэкранный просмотр" width="65%"> <img src="docs/assets/mini-player.png" alt="Мини-плеер поверх буфера обмена" width="28%"></p>
+<p align="center"><sub>Экраны стабильной версии 0.3.0. Новый интерфейс появится в 0.4.0.</sub></p>
 
-### Сейчас
+### На телефоне
 
-- Видео и плейлисты из PotPlayer с сохранением позиции, озвучки и субтитров.
-- Последнее копирование между телефоном и ПК, в обе стороны.
-- Передача ссылок между браузерами.
-- Системный мини-плеер Android и обновления из приложения.
+- Полноэкранное видео, озвучка, субтитры и их задержка.
+- Системный мини-плеер при сворачивании локального видео.
+- Буфер обмена в обе стороны и отправка конкретного текста через «Поделиться».
+- Входящие ссылки с ПК и отправка вкладки из мобильного браузера.
+- QR-подключение и установка обновлений из приложения.
 
 ### Подключение
 
-1. Распакуйте Windows ZIP и запустите **Запустить Синхро.cmd**.
-2. Подключите телефон по QR в открывшемся мастере.
-3. Откройте видео в PotPlayer и нажмите **Продолжить на телефоне**.
+1. Запустите [Windows-сервис](https://github.com/giveuper39/Synchro-Desktop/releases/latest).
+2. Установите APK и отсканируйте QR подключения. Адрес и ключ сохранятся автоматически.
+3. Нажмите **Продолжить на телефоне**. Для возврата на ПК поставьте видео на паузу.
 
-Для автоматического буфера нужен системный QR-сканер беспроводной отладки Android. Для видео и ручного обмена достаточно обычного QR приложения. Python и ADB включены в Windows ZIP.
+Автоматический буфер настраивается отдельно системным QR беспроводной отладки Android. Приложение не ведёт историю копирований.
 
 ### 0.4.0 — в работе
 
-Выбор источника просмотра, стандартный Медиаплеер Windows, YouTube из открытого браузера и новый интерфейс. Скриншоты новой версии появятся вместе с готовой сборкой.
+Новый экран просмотра с выбором источника, Windows Media Player, YouTube из открытого браузера и фотографии через системный буфер в обе стороны.
 
-### Исходники
+### Сборка
 
-Это нативное Android-приложение. Windows-сервис находится в [отдельном репозитории](https://github.com/giveuper39/syncro-desktop).
-
-JDK 21 · Gradle 8.11.1 · Android SDK 36.
+Android 8+ · ARM64 / x86-64. Для разработки: JDK 21, Gradle 8.11.1, Android SDK 36.
 
 ```sh
 cd android
 gradle :app:testDebugUnitTest :app:assembleDebug
 ```
 
-[Выпуск версий](docs/RELEASING.md) · [Работа с видео](docs/PLAYER.md) · [Лицензии](THIRD_PARTY_NOTICES.md)
+Для релизов используется постоянный ключ подписи. Он хранится в Secrets; приватных ключей в исходниках нет.
 
-Собственный код — MIT. PotPlayer не входит в дистрибутив.
+[Сборка Android](android/README.md) · [Релизы и OTA](docs/RELEASING.md) · [Лицензии](THIRD_PARTY_NOTICES.md)
+
+Собственный код — MIT. Воспроизведение локального видео — LibVLC.
