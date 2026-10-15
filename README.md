@@ -1,23 +1,44 @@
-# Синхро · Android
+<p align="center"><img src="docs/assets/synchro.svg" alt="synchro · Синхро" width="100%"></p>
+<p align="center">
+  <a href="https://github.com/giveuper39/syncro-desktop/releases/latest">Скачать для Windows</a> ·
+  <a href="https://github.com/giveuper39/syncro-android/releases/latest">Скачать для Android</a>
+</p>
 
-Нативное Android-приложение: просмотр исходного видео с ПК, системный Picture-in-Picture, буфер обмена и ссылки между Opera и Chrome.
+Синхро связывает телефон и компьютер в одной сети. Можно уйти от ПК, продолжить фильм на телефоне и вернуть просмотр обратно по паузе.
 
-[Скачать APK](https://github.com/giveuper39/syncro-android/releases/latest) · [Windows-сервис и QR-мастер](https://github.com/giveuper39/syncro-desktop)
+<p align="center"><img src="docs/assets/player.png" alt="Полноэкранный просмотр видео с компьютера" width="65%"> <img src="docs/assets/mini-player.png" alt="Видео в системном мини-плеере поверх буфера обмена" width="28%"></p>
+<p align="center"><sub>Реальные экраны текущей версии 0.3.0.</sub></p>
 
-Сначала запустите Windows-мастер. Для фонового буфера сопрягите телефон системным QR-сканером беспроводной отладки; для видео и ручного обмена достаточно обычного QR приложения. Громкость — штатными кнопками телефона.
+### Сейчас
 
-Обновления: кнопка «Обновления Синхро» проверяет стабильный тег GitHub, скачивает APK, проверяет digest, package ID, возрастающую версию и постоянную подпись. Установку подтверждает Android.
+- Видео и плейлисты из PotPlayer с сохранением позиции, озвучки и субтитров.
+- Последнее копирование между телефоном и ПК, в обе стороны.
+- Передача ссылок между браузерами.
+- Системный мини-плеер Android и обновления из приложения.
 
-## Сборка
+### Подключение
 
-JDK 21, Gradle 8.11.1, Android SDK 36 и build-tools 35.0.0. Из android/:
+1. Распакуйте Windows ZIP и запустите **Запустить Синхро.cmd**.
+2. Подключите телефон по QR в открывшемся мастере.
+3. Откройте видео в PotPlayer и нажмите **Продолжить на телефоне**.
 
-```text
-gradle :app:testDebugUnitTest :app:lintDebug :app:assembleDebug
+Для автоматического буфера нужен системный QR-сканер беспроводной отладки Android. Для видео и ручного обмена достаточно обычного QR приложения. Python и ADB включены в Windows ZIP.
+
+### 0.4.0 — в работе
+
+Выбор источника просмотра, стандартный Медиаплеер Windows, YouTube из открытого браузера и новый интерфейс. Скриншоты новой версии появятся вместе с готовой сборкой.
+
+### Исходники
+
+Это нативное Android-приложение. Windows-сервис находится в [отдельном репозитории](https://github.com/giveuper39/syncro-desktop).
+
+JDK 21 · Gradle 8.11.1 · Android SDK 36.
+
+```sh
+cd android
+gradle :app:testDebugUnitTest :app:assembleDebug
 ```
 
-На Windows: android/build-local.ps1 -JavaHome <JDK>. Скрипт скачивает проверенные SDK/Gradle локально. Подпись release задаётся переменными SYNCRO_KEYSTORE, SYNCRO_STORE_PASSWORD, SYNCRO_KEY_ALIAS, SYNCRO_KEY_PASSWORD. Ключи в исходники не входят.
+[Выпуск версий](docs/RELEASING.md) · [Работа с видео](docs/PLAYER.md) · [Лицензии](THIRD_PARTY_NOTICES.md)
 
-Тег vMAJOR.MINOR.PATCH запускает подписанную сборку и публикацию Release. См. [выпуск версий](docs/RELEASING.md). UI, воспроизведение, PiP, синхронизация и OTA разделены на отдельные классы. Стабильный package ID сохранён от раннего прототипа для совместимости.
-
-Поддерживаются ARM64 и x86-64, Android 8+. Другие плееры и YouTube — следующий этап. Исходное приложение MIT; зависимости и ограничения LibVLC описаны в [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md), результаты — [VALIDATION.md](VALIDATION.md).
+Собственный код — MIT. PotPlayer не входит в дистрибутив.
