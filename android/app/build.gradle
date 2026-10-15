@@ -1,0 +1,50 @@
+plugins { id 'com.android.application' }
+
+android {
+    namespace 'dev.potplayer.handoff'
+    compileSdk 36
+    defaultConfig {
+        applicationId 'dev.potplayer.handoff'
+        minSdk 26
+        targetSdk 35
+        versionCode 6
+        versionName '0.3.0'
+        testInstrumentationRunner 'dev.potplayer.handoff.PlaybackLatencyInstrumentation'
+        ndk { abiFilters 'arm64-v8a', 'x86_64' }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    splits {
+        abi {
+            enable true
+            reset()
+            include 'arm64-v8a', 'x86_64'
+            universalApk true
+        }
+    }
+    buildTypes {
+        debug { minifyEnabled false }
+        release {
+            minifyEnabled false
+            if (System.getenv('SYNCRO_KEYSTORE')) {
+                signingConfig signingConfigs.create('production') {
+                    storeFile file(System.getenv('SYNCRO_KEYSTORE'))
+                    storePassword System.getenv('SYNCRO_STORE_PASSWORD')
+                    keyAlias System.getenv('SYNCRO_KEY_ALIAS')
+                    keyPassword System.getenv('SYNCRO_KEY_PASSWORD')
+                }
+            }
+        }
+    }
+}
+
+dependencies {
+    implementation 'org.videolan.android:libvlc-all:3.7.7'
+    implementation 'com.google.android.material:material:1.13.0'
+    implementation 'androidx.appcompat:appcompat:1.7.1'
+    implementation 'com.journeyapps:zxing-android-embedded:4.3.0'
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.json:json:20240303'
+}

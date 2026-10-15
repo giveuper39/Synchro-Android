@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="background">#111214</color><color name="surface">#1C1E21</color>
+    <color name="surface_high">#292B2F</color><color name="amber">#FFD34E</color>
+    <color name="ink">#181A1E</color><color name="text_primary">#F6F5EF</color>
+    <color name="text_secondary">#A4A7AD</color><color name="green">#8BD5AF</color>
+    <color name="zxing_viewfinder_laser">#FFD34E</color>
+    <color name="zxing_viewfinder_mask">#99000000</color>
+</resources>

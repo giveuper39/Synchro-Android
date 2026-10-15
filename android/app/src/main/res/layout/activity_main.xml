@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/app_root" android:layout_width="match_parent" android:layout_height="match_parent" android:background="@color/background">
+    <ScrollView android:id="@+id/connection_screen" android:layout_width="match_parent" android:layout_height="match_parent" android:fillViewport="true" android:clipToPadding="false">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="24dp" android:gravity="center_horizontal">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="48dp" android:gravity="center_vertical">
+                <ImageView android:layout_width="36dp" android:layout_height="36dp" android:src="@drawable/ic_brand" android:importantForAccessibility="no"/>
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="12dp" android:text="Синхро" android:textColor="@color/text_primary" android:textSize="19sp" android:fontFamily="sans-serif-medium"/>
+                <ImageButton android:id="@+id/home_more" style="@style/PlayerIconButton" android:layout_width="40dp" android:layout_height="40dp" android:src="@drawable/ic_more" android:contentDescription="О приложении"/>
+            </LinearLayout>
+            <LinearLayout android:id="@+id/connection_intro" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:gravity="center_horizontal">
+            <Space android:layout_width="1dp" android:layout_height="16dp"/>
+            <ImageView android:layout_width="200dp" android:layout_height="112dp" android:src="@drawable/ic_devices" android:importantForAccessibility="no"/>
+            <TextView style="@style/Text.Kicker" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="16dp" android:text="ВИДЕО · БУФЕР · ВКЛАДКИ"/>
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:text="Телефон и ПК.\nВ одном месте." android:gravity="center" android:textSize="30sp" android:lineSpacingExtra="2dp" android:fontFamily="sans-serif-medium" android:textColor="@color/text_primary"/>
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="14dp" android:text="Откройте QR-код на компьютере.\nТелефон и ПК должны быть в одной сети." android:gravity="center" android:textColor="@color/text_secondary" android:textSize="15sp" android:lineSpacingExtra="4dp"/>
+            </LinearLayout>
+            <com.google.android.material.button.MaterialButton android:id="@+id/scan_qr" android:layout_width="match_parent" android:layout_height="56dp" android:layout_marginTop="20dp" android:text="Сканировать QR-код" android:textSize="16sp" app:icon="@drawable/ic_qr" app:iconGravity="textStart" app:iconPadding="12dp" app:cornerRadius="18dp"/>
+            <com.google.android.material.button.MaterialButton android:id="@+id/manual_toggle" style="@style/Widget.Material3.Button.TextButton" android:layout_width="wrap_content" android:layout_height="48dp" android:text="Ввести адрес вручную" android:textColor="@color/text_secondary"/>
+            <LinearLayout android:id="@+id/saved_computer" android:visibility="gone" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:background="@drawable/bg_card" android:padding="20dp" android:layout_marginTop="12dp">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical">
+                    <ImageView android:layout_width="28dp" android:layout_height="28dp" android:src="@drawable/ic_computer" app:tint="@color/amber" android:importantForAccessibility="no"/>
+                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="14dp" android:orientation="vertical">
+                        <TextView android:id="@+id/computer_name" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Ваш компьютер" android:textColor="@color/text_primary" android:textSize="16sp" android:fontFamily="sans-serif-medium"/>
+                        <TextView android:id="@+id/computer_address" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:textColor="@color/text_secondary" android:textSize="13sp"/>
+                    </LinearLayout>
+                    <TextView android:id="@+id/connection_badge" style="@style/Text.Kicker" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="СОХРАНЁН" android:textSize="9sp"/>
+                </LinearLayout>
+                <com.google.android.material.button.MaterialButton android:id="@+id/takeover" android:layout_width="match_parent" android:layout_height="56dp" android:layout_marginTop="18dp" android:text="Продолжить видео с ПК" app:icon="@drawable/ic_play" app:iconGravity="textStart" app:cornerRadius="16dp"/>
+            </LinearLayout>
+            <LinearLayout android:id="@+id/manual_fields" android:visibility="gone" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:layout_marginTop="12dp">
+                <com.google.android.material.textfield.TextInputLayout style="@style/Widget.Material3.TextInputLayout.OutlinedBox" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Адрес компьютера">
+                    <com.google.android.material.textfield.TextInputEditText android:id="@+id/server_input" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="textUri" android:singleLine="true"/>
+                </com.google.android.material.textfield.TextInputLayout>
+                <com.google.android.material.textfield.TextInputLayout style="@style/Widget.Material3.TextInputLayout.OutlinedBox" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:hint="Ключ подключения" app:endIconMode="password_toggle">
+                    <com.google.android.material.textfield.TextInputEditText android:id="@+id/token_input" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="textPassword" android:singleLine="true"/>
+                </com.google.android.material.textfield.TextInputLayout>
+                <com.google.android.material.button.MaterialButton android:id="@+id/connect" style="@style/Widget.Material3.Button.OutlinedButton" android:layout_width="match_parent" android:layout_height="54dp" android:layout_marginTop="12dp" android:text="Подключить компьютер" app:cornerRadius="16dp"/>
+            </LinearLayout>
+            <LinearLayout android:id="@+id/home_features" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:visibility="gone">
+                <com.google.android.material.button.MaterialButton android:id="@+id/hub_clipboard" style="@style/Widget.Material3.Button.OutlinedButton" android:layout_width="match_parent" android:layout_height="64dp" android:layout_marginTop="14dp" android:text="Буфер обмена   ↔" android:textSize="17sp" app:icon="@drawable/ic_clipboard" app:cornerRadius="18dp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/hub_tabs" style="@style/Widget.Material3.Button.OutlinedButton" android:layout_width="match_parent" android:layout_height="64dp" android:layout_marginTop="6dp" android:text="Вкладки браузера   ↗" android:textSize="17sp" app:icon="@drawable/ic_tabs" app:cornerRadius="18dp"/>
+            </LinearLayout>
+            <TextView android:id="@+id/home_status" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="18dp" android:gravity="center" android:text="Адрес и ключ заполнятся из QR-кода" android:textSize="13sp" android:lineSpacingExtra="3dp" android:textColor="@color/text_secondary" android:accessibilityLiveRegion="polite"/>
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="24dp" android:layout_marginBottom="12dp" android:gravity="center" android:text="Прямое подключение · Без облака" android:textSize="11sp" android:textColor="#777B83"/>
+        </LinearLayout>
+    </ScrollView>
+    <FrameLayout android:id="@+id/player_screen" android:visibility="gone" android:layout_width="match_parent" android:layout_height="match_parent" android:background="#000000">
+        <org.videolan.libvlc.util.VLCVideoLayout android:id="@+id/video" android:layout_width="match_parent" android:layout_height="match_parent"/>
+        <View android:id="@+id/video_touch" android:layout_width="match_parent" android:layout_height="match_parent" android:contentDescription="Показать или скрыть элементы управления" android:clickable="true" android:focusable="true"/>
+        <com.google.android.material.progressindicator.CircularProgressIndicator android:id="@+id/loading" android:layout_width="48dp" android:layout_height="48dp" android:layout_gravity="center" android:indeterminate="true" android:visibility="gone" android:contentDescription="Загрузка видео" app:indicatorSize="40dp" app:trackThickness="3dp" app:indicatorColor="@color/amber"/>
+        <FrameLayout android:id="@+id/player_controls" android:layout_width="match_parent" android:layout_height="match_parent">
+            <View android:layout_width="match_parent" android:layout_height="136dp" android:layout_gravity="top" android:background="@drawable/bg_scrim_top"/>
+            <View android:layout_width="match_parent" android:layout_height="200dp" android:layout_gravity="bottom" android:background="@drawable/bg_scrim_bottom"/>
+            <LinearLayout android:id="@+id/player_header" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_gravity="top" android:orientation="horizontal" android:gravity="center_vertical" android:padding="16dp">
+                <ImageButton android:id="@+id/player_back" style="@style/PlayerIconButton" android:src="@drawable/ic_back" android:contentDescription="Вернуть просмотр на ПК и открыть меню"/>
+                <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:layout_marginStart="16dp" android:layout_marginEnd="12dp">
+                    <TextView android:id="@+id/video_title" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="17sp" android:fontFamily="sans-serif-medium" android:textColor="@color/text_primary" android:maxLines="1" android:ellipsize="end"/>
+                    <TextView android:id="@+id/video_episode" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:textColor="#B3FFFFFF" android:textSize="12sp"/>
+                </LinearLayout>
+                <ImageButton android:id="@+id/player_queue" style="@style/PlayerIconButton" android:src="@drawable/ic_queue" android:contentDescription="Плейлист"/>
+                <ImageButton android:id="@+id/mini_player" style="@style/PlayerIconButton" android:src="@drawable/ic_pip" android:contentDescription="Мини-плеер поверх других приложений"/>
+            </LinearLayout>
+            <LinearLayout android:id="@+id/transport_controls" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center" android:gravity="center_vertical">
+                <ImageButton android:id="@+id/previous" style="@style/PlayerIconButton" android:layout_width="44dp" android:layout_height="44dp" android:src="@drawable/ic_previous" android:contentDescription="Предыдущая серия"/>
+                <ImageButton android:id="@+id/replay" style="@style/PlayerIconButton" android:layout_width="44dp" android:layout_height="44dp" android:layout_marginStart="8dp" android:src="@drawable/ic_replay" android:contentDescription="Назад на 10 секунд"/>
+                <ImageButton android:id="@+id/play_pause" android:layout_width="72dp" android:layout_height="72dp" android:layout_marginStart="12dp" android:layout_marginEnd="12dp" android:padding="22dp" android:background="@drawable/bg_play_button" app:tint="@color/ink" android:src="@drawable/ic_pause" android:contentDescription="Пауза и передача позиции на компьютер"/>
+                <ImageButton android:id="@+id/forward" style="@style/PlayerIconButton" android:layout_width="44dp" android:layout_height="44dp" android:src="@drawable/ic_forward" android:contentDescription="Вперёд на 10 секунд"/>
+                <ImageButton android:id="@+id/next" style="@style/PlayerIconButton" android:layout_width="44dp" android:layout_height="44dp" android:layout_marginStart="8dp" android:src="@drawable/ic_next" android:contentDescription="Следующая серия"/>
+            </LinearLayout>
+            <LinearLayout android:id="@+id/player_footer" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_gravity="bottom" android:orientation="vertical" android:padding="16dp">
+                <com.google.android.material.button.MaterialButton android:id="@+id/retry" style="@style/PlayerChip" android:layout_width="wrap_content" android:layout_height="44dp" android:visibility="gone" android:text="Повторить передачу позиции"/>
+                <TextView android:id="@+id/player_status" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="8dp" android:textColor="#CCFFFFFF" android:textSize="12sp" android:maxLines="2" android:ellipsize="end" android:accessibilityLiveRegion="polite"/>
+                <LinearLayout android:layout_width="match_parent" android:layout_height="40dp" android:gravity="center_vertical">
+                    <TextView android:id="@+id/time" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="00:00 / 00:00" android:textColor="@color/text_primary" android:textSize="13sp" android:fontFamily="sans-serif-medium"/>
+                    <com.google.android.material.button.MaterialButton android:id="@+id/rate" style="@style/PlayerChip" android:layout_width="wrap_content" android:layout_height="36dp" android:text="1×"/>
+                    <ImageButton android:id="@+id/fullscreen" style="@style/PlayerIconButton" android:layout_width="40dp" android:layout_height="40dp" android:layout_marginStart="8dp" android:padding="10dp" android:src="@drawable/ic_fullscreen" android:contentDescription="Повернуть видео в альбомный режим"/>
+                </LinearLayout>
+                <com.google.android.material.slider.Slider android:id="@+id/seek" android:layout_width="match_parent" android:layout_height="36dp" android:valueFrom="0" android:valueTo="10000" android:value="0" app:trackHeight="3dp" app:thumbWidth="12dp" app:thumbHeight="12dp" app:thumbRadius="6dp" app:thumbTrackGapSize="0dp" app:trackStopIndicatorSize="0dp" app:trackColorActive="@color/amber" app:trackColorInactive="#55FFFFFF" app:thumbColor="@color/amber" app:haloRadius="14dp" app:labelBehavior="gone" android:contentDescription="Позиция просмотра"/>
+                <LinearLayout android:layout_width="match_parent" android:layout_height="44dp" android:layout_marginTop="4dp" android:gravity="center_vertical">
+                    <com.google.android.material.button.MaterialButton android:id="@+id/audio" style="@style/PlayerChip" android:layout_width="0dp" android:layout_height="40dp" android:layout_weight="1" android:text="Озвучка" app:icon="@drawable/ic_audio" app:iconGravity="textStart"/>
+                    <com.google.android.material.button.MaterialButton android:id="@+id/subtitles" style="@style/PlayerChip" android:layout_width="0dp" android:layout_height="40dp" android:layout_weight="1" android:layout_marginStart="8dp" android:text="Субтитры" app:icon="@drawable/ic_subtitles" app:iconGravity="textStart"/>
+                    <ImageButton android:id="@+id/player_more" style="@style/PlayerIconButton" android:layout_width="44dp" android:layout_height="44dp" android:layout_marginStart="8dp" android:src="@drawable/ic_more" android:contentDescription="Настройки просмотра"/>
+                </LinearLayout>
+            </LinearLayout>
+        </FrameLayout>
+    </FrameLayout>
+</FrameLayout>

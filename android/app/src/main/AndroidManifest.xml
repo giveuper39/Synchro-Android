@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <application
+        android:allowBackup="false"
+        android:label="@string/app_name"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher"
+        android:theme="@style/AppTheme"
+        android:usesCleartextTraffic="true"
+        android:supportsRtl="true">
+        <activity android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:supportsPictureInPicture="true"
+            android:resizeableActivity="true"
+            android:configChanges="orientation|screenSize|keyboardHidden|smallestScreenSize|screenLayout">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="potplayerreceiver" android:host="pair" />
+                <data android:scheme="syncro" android:host="pair" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".QrScannerActivity" android:exported="false"
+            android:screenOrientation="portrait" android:theme="@style/ScannerTheme" />
+        <activity android:name=".UpdateActivity" android:exported="false" />
+        <provider android:name="androidx.core.content.FileProvider" android:authorities="${applicationId}.updates"
+            android:exported="false" android:grantUriPermissions="true">
+            <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/update_paths" />
+        </provider>
+        <activity android:name=".SyncActivity" android:exported="true" android:launchMode="singleTop"
+            android:taskAffinity="dev.potplayer.handoff.sharing" android:excludeFromRecents="true">
+            <intent-filter>
+                <action android:name="android.intent.action.SEND"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:mimeType="text/plain"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.PROCESS_TEXT"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:mimeType="text/plain"/>
+            </intent-filter>
+        </activity>
+    </application>
+    <queries><package android:name="com.opera.browser"/><intent><action android:name="android.intent.action.VIEW"/><data android:scheme="https"/></intent></queries>
+</manifest>
