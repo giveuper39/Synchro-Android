@@ -98,6 +98,10 @@ public final class PlaybackLatencyInstrumentation extends Instrumentation {
 
   @Override
   public void onStart() {
+    if ("pairing".equals(arguments.getString("suite"))) {
+      PairingChecks.run(this, arguments);
+      return;
+    }
     if ("design".equals(arguments.getString("suite"))) {
       new DesignChecks(this, arguments).run();
       return;

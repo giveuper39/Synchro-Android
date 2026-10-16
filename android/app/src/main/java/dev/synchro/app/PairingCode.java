@@ -17,36 +17,89 @@ final class PairingCode {
   }
 
   static PairingCode parse(String contents) {
-    if (contents == null || contents.length() > 2048) throw invalid();
+    if (contents == null || contents.length() > 4096) throw invalid();
     try {
       URI uri = URI.create(contents);
-      if (!("synchro".equalsIgnoreCase(uri.getScheme())
-              || "potplayerreceiver".equals(uri.getScheme())
-              || "syncro".equals(uri.getScheme()))
-          || !"pair".equals(uri.getHost())
-          || !(uri.getPath().isEmpty() || "/".equals(uri.getPath()))
-          || uri.getUserInfo() != null
-          || uri.getFragment() != null
-          || uri.getRawQuery() == null) throw invalid();
-      Map<String, String> values = new HashMap<>();
-      for (String field : uri.getRawQuery().split("&")) {
-        String[] parts = field.split("=", 2);
-        if (parts.length != 2) throw invalid();
-        String key = URLDecoder.decode(parts[0], StandardCharsets.UTF_8.name());
-        String value = URLDecoder.decode(parts[1], StandardCharsets.UTF_8.name());
-        if (values.put(key, value) != null) throw invalid();
+      if ("http".equalsIgnoreCase(uri.getScheme()) || "https".equalsIgnoreCase(uri.getScheme())) {
+        if (uri.getHost() == null
+            || uri.getUserInfo() != null
+            || uri.getRawQuery() != null
+            || uri.getRawFragment() == null
+            || !("/connect".equals(uri.getPath()) || "/".equals(uri.getPath()))) throw invalid();
+        Map<String, String> outer = fields(uri.getRawFragment());
+        if (outer.containsKey("install") && !"1".equals(outer.get("install"))) throw invalid();
+        PairingCode code;
+        if (outer.containsKey("pair")) {
+          if (outer.keySet().stream()
+              .anyMatch(key -> !key.equals("pair") && !key.equals("install"))) throw invalid();
+          code = parseAppUri(outer.get("pair"));
+        } else {
+          if (outer.keySet().stream()
+              .anyMatch(
+                  key ->
+                      !key.equals("v")
+                          && !key.equals("token")
+                          && !key.equals("name")
+                          && !key.equals("install"))) throw invalid();
+          outer.put(
+              "server",
+              new URI(uri.getScheme(), null, uri.getHost(), uri.getPort(), null, null, null)
+                  .toString());
+          code = readValues(outer);
+        }
+        URI server = URI.create(code.server);
+        if (!uri.getScheme().equalsIgnoreCase(server.getScheme())
+            || !uri.getHost().equalsIgnoreCase(server.getHost())
+            || port(uri) != port(server)) throw invalid();
+        return code;
       }
-      if (!"1".equals(values.get("v"))) throw invalid();
-      String server = values.get("server"), token = values.get("token");
-      if (server == null || token == null || !token.matches("[A-Za-z0-9_-]{24,256}"))
-        throw invalid();
-      ApiClient client = new ApiClient(server, token);
-      String name = values.getOrDefault("name", "Ваш компьютер");
-      if (name.length() > 80 || name.chars().anyMatch(Character::isISOControl)) throw invalid();
-      return new PairingCode(client.server(), token, name);
+      return parseAppUri(contents);
     } catch (Exception error) {
       throw invalid();
     }
+  }
+
+  private static int port(URI uri) {
+    int value = uri.getPort();
+    if (value == 0 || value > 65535) throw invalid();
+    return value == -1 ? ("https".equalsIgnoreCase(uri.getScheme()) ? 443 : 80) : value;
+  }
+
+  private static Map<String, String> fields(String raw) throws Exception {
+    Map<String, String> values = new HashMap<>();
+    for (String field : raw.split("&")) {
+      String[] parts = field.split("=", 2);
+      if (parts.length != 2) throw invalid();
+      String key = URLDecoder.decode(parts[0], StandardCharsets.UTF_8.name());
+      String value = URLDecoder.decode(parts[1], StandardCharsets.UTF_8.name());
+      if (values.put(key, value) != null) throw invalid();
+    }
+    return values;
+  }
+
+  private static PairingCode parseAppUri(String contents) throws Exception {
+    if (contents == null || contents.length() > 2048) throw invalid();
+    URI uri = URI.create(contents);
+    if (!("synchro".equalsIgnoreCase(uri.getScheme())
+            || "potplayerreceiver".equals(uri.getScheme())
+            || "syncro".equals(uri.getScheme()))
+        || !"pair".equals(uri.getHost())
+        || !(uri.getPath().isEmpty() || "/".equals(uri.getPath()))
+        || uri.getUserInfo() != null
+        || uri.getPort() != -1
+        || uri.getFragment() != null
+        || uri.getRawQuery() == null) throw invalid();
+    return readValues(fields(uri.getRawQuery()));
+  }
+
+  private static PairingCode readValues(Map<String, String> values) {
+    if (!"1".equals(values.get("v"))) throw invalid();
+    String server = values.get("server"), token = values.get("token");
+    if (server == null || token == null || !token.matches("[A-Za-z0-9_-]{24,256}")) throw invalid();
+    ApiClient client = new ApiClient(server, token);
+    String name = values.getOrDefault("name", "Ваш компьютер");
+    if (name.length() > 80 || name.chars().anyMatch(Character::isISOControl)) throw invalid();
+    return new PairingCode(client.server(), token, name);
   }
 
   private static IllegalArgumentException invalid() {
