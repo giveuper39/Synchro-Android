@@ -98,6 +98,10 @@ public final class PlaybackLatencyInstrumentation extends Instrumentation {
 
   @Override
   public void onStart() {
+    if ("coldStart".equals(arguments.getString("suite"))) {
+      ColdStartChecks.run(this, arguments);
+      return;
+    }
     if ("pairing".equals(arguments.getString("suite"))) {
       PairingChecks.run(this, arguments);
       return;

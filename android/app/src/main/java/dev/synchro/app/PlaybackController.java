@@ -67,6 +67,8 @@ public final class PlaybackController {
   private long positionMs;
   private long seekRequestedAt;
   private long loadedAt;
+  private boolean startupReported;
+  private boolean firstOutputReported;
   private int index;
   private int audioIndex = -1;
   private int subtitleIndex = -1;
@@ -84,7 +86,7 @@ public final class PlaybackController {
             : AudioOutput.STANDARD;
     ArrayList<String> options = new ArrayList<>();
     options.add("--no-video-title-show");
-    options.add("--network-caching=1000");
+    options.add("--network-caching=300");
     // Match VLC Android's resampler; use its best fixed-ratio quality when needed.
     // At equal input/output rates SoXR bypasses sample-rate conversion.
     options.add("--audio-resampler=soxr");
@@ -233,6 +235,8 @@ public final class PlaybackController {
     subtitleApplied = false;
     paused = startPaused;
     loadedAt = SystemClock.elapsedRealtime();
+    startupReported = false;
+    firstOutputReported = false;
     seekRequestedAt = loadedAt;
     // LibVLC applies an audio-output change when playback starts. Stop the old
     // output first so switching backends cannot leave a second stream playing.
@@ -243,7 +247,7 @@ public final class PlaybackController {
     Media media = new Media(libVlc, Uri.parse(item.url));
     try {
       media.setHWDecoderEnabled(true, false);
-      media.addOption(":network-caching=1000");
+      media.addOption(":network-caching=300");
       if (startPaused) media.addOption(":start-paused");
       if (positionMs > 0) media.addOption(":start-time=" + (positionMs / 1000.0));
       player.setMedia(media);
@@ -261,9 +265,15 @@ public final class PlaybackController {
       case MediaPlayer.Event.Playing:
       case MediaPlayer.Event.Paused:
         boolean firstPlaying = !prepared;
+        if (firstPlaying && !startupReported) {
+          startupReported = true;
+          android.util.Log.i(
+              "SynchroStartup", "decoderReadyMs=" + (SystemClock.elapsedRealtime() - loadedAt));
+        }
         prepared = true;
         if (firstPlaying) player.setRate(rate);
-        if (firstPlaying && positionMs > 0) player.setTime(positionMs, false);
+        // start-time already performs the initial seek before decoding. Seeking
+        // again here flushes that freshly prepared HTTP/decoder buffer.
         applyPendingTracks();
         player.setSpuDelay(subtitleDelayMs * 1000L);
         if (paused && player.isPlaying()) player.pause();
@@ -272,6 +282,13 @@ public final class PlaybackController {
       case MediaPlayer.Event.ESAdded:
       case MediaPlayer.Event.ESSelected:
         applyPendingTracks();
+        break;
+      case MediaPlayer.Event.Vout:
+        if (!firstOutputReported && event.getVoutCount() > 0) {
+          firstOutputReported = true;
+          android.util.Log.i(
+              "SynchroStartup", "firstVideoOutputMs=" + (SystemClock.elapsedRealtime() - loadedAt));
+        }
         break;
       case MediaPlayer.Event.TimeChanged:
         if (prepared && SystemClock.elapsedRealtime() - seekRequestedAt >= 700) {

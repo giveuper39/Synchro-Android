@@ -222,6 +222,13 @@ final class ClipboardImageChecks {
         throw new AssertionError("More than one image retained");
       result.putBoolean("backgroundClipboardAndProvider", true);
       result.putBoolean("originAndLatestOnly", true);
+      Uri generic = Uri.parse("content://dev.potplayer.handoff.test.generic-images/photo");
+      if (!"application/octet-stream".equals(activity.getContentResolver().getType(generic)))
+        throw new AssertionError("Generic MIME fixture did not apply");
+      ClipData copied = ClipData.newUri(activity.getContentResolver(), "Synthetic photo", generic);
+      host.runOnMainSync(() -> activity.getSystemService(ClipboardManager.class).setPrimaryClip(copied));
+      dimensions(ClipboardImages.readLastImage(activity), 4, 2);
+      result.putBoolean("genericProviderMimeFixture", true);
       result.putString("result", "passed");
       host.finish(Activity.RESULT_OK, result);
     } catch (Throwable error) {

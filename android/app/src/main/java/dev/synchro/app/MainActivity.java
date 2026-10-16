@@ -290,14 +290,24 @@ public final class MainActivity extends AppCompatActivity implements PlaybackCon
       return;
     }
     requestInFlight = true;
+    final long requestQueuedAt = android.os.SystemClock.elapsedRealtime();
     ui.busy(true);
     onStatus(takePlayback ? "Получаем видео и плейлист с компьютера…" : "Проверяем подключение…");
     network.execute(
         () -> {
           try {
             if (takePlayback) {
+              long requestStarted = android.os.SystemClock.elapsedRealtime();
               // Unlike progress, takeover is not blindly retried: it creates a new session.
               SessionState next = candidate.takeover();
+              android.util.Log.i(
+                  "SynchroStartup",
+                  "queueMs="
+                      + (requestStarted - requestQueuedAt)
+                      + " apiMs="
+                      + (android.os.SystemClock.elapsedRealtime() - requestStarted)
+                      + " serverMs="
+                      + next.serverPreparationMs);
               main.post(
                   () -> {
                     if (destroyed) return;

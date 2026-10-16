@@ -61,6 +61,7 @@ public final class SessionState {
   public final String playlistWarning;
   public final String sessionId;
   public final boolean resumeInPlace;
+  public final long serverPreparationMs;
   public final long sequence;
   public final int index;
   public final long positionMs;
@@ -79,6 +80,8 @@ public final class SessionState {
     supportsRate = capabilities == null || capabilities.optBoolean("rate", true);
     sessionId = value.getString("sessionId");
     resumeInPlace = value.optBoolean("resumeInPlace", false);
+    JSONObject startup = value.optJSONObject("startupTiming");
+    serverPreparationMs = startup == null ? -1 : startup.optLong("totalMs", -1);
     if (sessionId.trim().isEmpty()) throw new JSONException("Сервер не вернул sessionId");
     sequence = Math.max(0, value.optLong("sequence", 0));
     JSONArray array = value.getJSONArray("items");
