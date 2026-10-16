@@ -10,8 +10,8 @@ import java.lang.reflect.Field;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import org.json.JSONObject;
-import org.videolan.libvlc.interfaces.IMedia;
 import org.videolan.libvlc.MediaPlayer;
+import org.videolan.libvlc.interfaces.IMedia;
 
 /**
  * Runs against the isolated slow-PC fixture on port 18765. Never target a real viewing session.
@@ -124,6 +124,10 @@ public final class PlaybackLatencyInstrumentation extends Instrumentation {
 
   @Override
   public void onStart() {
+    if ("lifecycle".equals(arguments.getString("suite"))) {
+      new LifecycleChecks(this, arguments).run();
+      return;
+    }
     if ("coldStart".equals(arguments.getString("suite"))) {
       ColdStartChecks.run(this, arguments);
       return;

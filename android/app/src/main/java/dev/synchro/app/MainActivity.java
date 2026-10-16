@@ -97,13 +97,23 @@ public final class MainActivity extends AppCompatActivity implements PlaybackCon
   }
 
   @Override
+  protected void onResume() {
+    super.onResume();
+    visible = true;
+    checkpointPlaying();
+  }
+
+  @Override
   protected void onPause() {
-    visible = false;
+    // Paused is still visible during PiP, its expansion and transient dialogs.
+    // onResume may follow without another onStart. Hide only at onStop.
+    checkpointPlaying();
     super.onPause();
   }
 
   @Override
   protected void onStop() {
+    visible = false;
     // PiP remains visible and reaches onPause, not onStop. Closing the mini-player
     // or truly hiding the activity checkpoints playback and stops local audio.
     if (playback.hasSession() && !playback.isPaused()) playback.pauseForHandoff();
@@ -149,6 +159,14 @@ public final class MainActivity extends AppCompatActivity implements PlaybackCon
   public void onPictureInPictureModeChanged(boolean inPip, Configuration config) {
     super.onPictureInPictureModeChanged(inPip, config);
     ui.pictureInPicture(inPip);
+    checkpointPlaying();
+  }
+
+  private void checkpointPlaying() {
+    if (playback == null || !playback.hasSession() || playback.isPaused()) return;
+    playback.refresh();
+    lastHeartbeatAt = android.os.SystemClock.elapsedRealtime();
+    sendProgress(false, false);
   }
 
   private void action(ReceiverUi.Action action) {
