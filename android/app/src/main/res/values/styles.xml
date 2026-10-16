@@ -5,13 +5,13 @@
         <item name="colorOnPrimary">@color/ink</item>
         <item name="colorPrimaryContainer">#423713</item>
         <item name="colorOnPrimaryContainer">#FFE8A2</item>
-        <item name="colorSecondary">@color/amber</item>
+        <item name="colorSecondary">#BEC7D6</item>
         <item name="colorSurface">@color/surface</item>
         <item name="colorOnSurface">@color/text_primary</item>
         <item name="colorOnSurfaceVariant">@color/text_secondary</item>
         <item name="colorOutline">#424448</item>
         <item name="android:windowBackground">@color/background</item>
-        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:fontFamily">@font/manrope</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@color/background</item>
         <item name="android:windowLightStatusBar">false</item>
@@ -46,4 +46,9 @@
         <item name="android:paddingLeft">14dp</item>
         <item name="android:paddingRight">14dp</item>
     </style>
+    <style name="Synchro.QuietButton" parent="Widget.Material3.Button.TonalButton">
+        <item name="backgroundTint">#252A32</item><item name="android:textColor">@color/text_primary</item><item name="iconTint">@color/text_primary</item><item name="cornerRadius">18dp</item><item name="android:textSize">14sp</item><item name="android:minHeight">52dp</item>
+    </style>
+    <style name="Synchro.Title" parent="TextAppearance.Material3.HeadlineMedium"><item name="android:fontFamily">@font/manrope</item><item name="android:textColor">@color/text_primary</item><item name="android:textSize">28sp</item><item name="android:letterSpacing">-0.035</item></style>
+    <style name="Synchro.NavLabel" parent="TextAppearance.Material3.LabelSmall"><item name="android:textSize">10sp</item><item name="android:textColor">@color/text_secondary</item><item name="android:gravity">center</item></style>
 </resources>

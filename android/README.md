@@ -1,93 +1,48 @@
-# Синхро для Android
+# Synchro · Android development
 
-Нативный Java-клиент для передачи просмотра из PotPlayer на телефон в одной локальной сети. Видео декодируется на Android через LibVLC, а Windows отдаёт исходный файл с поддержкой HTTP Range. Экран компьютера можно использовать независимо.
+Нативное приложение на Java: LibVLC для локального видео, официальный iframe для YouTube, системный PiP, обмен текстом/фото и вкладками. Основной Java namespace — `dev.synchro.app`. Установочный `applicationId` `dev.potplayer.handoff` сохранён для обновления существующих установок; он не является названием продукта.
 
 ## Сборка
 
-Требуются Windows, PowerShell и JDK 21. Локальный bootstrap загружает официальные Google Android command-line tools, API 36 / Build Tools 35.0.0 и Gradle 8.11.1 в соседний каталог `.tools`. Используются AGP 8.10.1 и LibVLC 3.7.7. Архивы tools проверяются по SHA-256. Пользовательские переменные окружения не меняются. Android SDK и Gradle cache не включаются в Git.
+JDK 21, Gradle 8.11.1, Android SDK 36 / Build Tools 35.0.0. Минимум Android 8.0 (API 26), ARM64 / x86-64.
+
+```sh
+gradle :app:testDebugUnitTest :app:lintDebug :app:assembleDebug
+```
+
+На Windows из корня проекта:
 
 ```powershell
-./build-local.ps1 -JavaHome '<каталог JDK 21>'
+./android/build-local.ps1 -JavaHome '<JDK 21>' ':app:testDebugUnitTest' ':app:lintDebug' ':app:assembleDebug'
+./android/verify-apk.ps1 -JavaHome '<JDK 21>'
 ```
 
-Если `JAVA_HOME` уже указывает на JDK, параметр не нужен. Скрипт также ищет `javac` в `PATH`. Для существующего Android SDK можно собрать проект обычным Gradle с `ANDROID_HOME` / `local.properties`.
+Bootstrap загружает официальные SDK/Gradle с проверкой SHA-256 в `.tools`, не меняя пользовательское окружение. APK находятся в `android/app/build/outputs/apk/debug/`: universal, arm64-v8a и x86_64. Debug APK нельзя установить поверх release APK с другим сертификатом.
 
-Результат — три debug APK в `app/build/outputs/apk/debug/`: `app-arm64-v8a-debug.apk` для телефона, `app-x86_64-debug.apk` для эмулятора и `app-universal-debug.apk`. Минимум Android 8.0 / API 26. APK подписывается локальным debug-ключом; это ещё не Play Store release.
+Release использует `SYNCHRO_KEYSTORE`, `SYNCHRO_STORE_PASSWORD`, `SYNCHRO_KEY_ALIAS`, `SYNCHRO_KEY_PASSWORD`. Ключ постоянный, в репозитории его нет. При новой версии увеличивайте `versionCode` и `versionName`. [Релизы и OTA](../docs/RELEASING.md).
 
-Проверки:
+## Слои
 
-```powershell
-./build-local.ps1 -JavaHome '<каталог JDK 21>' ':app:testDebugUnitTest' ':app:assembleDebug' ':app:lintDebug'
-./verify-apk.ps1 -JavaHome '<каталог JDK 21>'
-```
+- `ApiClient`, `SessionState`, `ProgressUpdate`: ограниченный HTTP, проверка входных данных и упорядоченные снимки состояния.
+- `PlaybackController`: единственный владелец LibVLC на главном потоке; очередь, дорожки и задержка субтитров.
+- `MainActivity`, `ReceiverUi`, `AppDesign`, `SourceSheet`: подключение, выбранный источник, навигация и управление просмотром.
+- `PipController`: локальное видео в системном Picture-in-Picture, действия Play/Pause и checkpoint при закрытии.
+- `YouTubeActivity`: официальный встроенный плеер без native JavaScript interface; ключ подключения остаётся в Java.
+- `SyncActivity`, `ClipboardImages`, `ClipboardImageReceiver`: ручной обмен и получение изображения фоновым ADB-получателем.
+- `UpdateActivity`, `GitHubRelease`: стабильные релизы, SHA-256, проверка версии/пакета/сертификата перед системной установкой.
 
-В Gradle 8.11.1 на Windows существует [ошибка блокировки временного transform cache](https://github.com/gradle/gradle/issues/31392): `Could not move temporary workspace ... to immutable location`. Если она возникает, сохраните лог и остановите Gradle daemon, использующий именно локальный `.tools/gradle-home`, перед повтором. Это ошибка tooling до компиляции приложения; её диагностика находится в upstream issue.
+## Проверки
 
-## Использование
+JVM-тесты выполняются обычным Gradle. Нативный runner — `dev.potplayer.handoff.test/dev.synchro.app.PlaybackLatencyInstrumentation`. Он работает только с изолированным сервером на порту 18765 и собственными синтетическими файлами. Нельзя направлять его на рабочую сессию или реальный буфер пользователя.
 
-1. Запустите Windows-мастер и подключите телефон по QR. Для автоматического буфера используйте системный сканер беспроводной отладки; IP и порты вводить не нужно.
-2. Установите APK поверх предыдущего. В приложении выберите «Сканировать QR-код» и наведите камеру на QR из вкладки подключения на ПК. Адрес, ключ и имя компьютера сохранятся автоматически; ручной ввод остаётся доступен.
-3. «Продолжить с ПК» открывает полноэкранный альбомный плеер. Системные панели скрыты. Касание показывает/скрывает управление, двойное касание слева/справа перематывает на 10 секунд. Кнопка поворота возвращает портретный режим.
-4. Озвучка, субтитры, задержка и скорость находятся в нижних панелях Material. Громкость меняется системными кнопками телефона; отдельного ползунка в приложении нет. Пауза или уход с экрана отправляет позицию и настройки в PotPlayer. Подтверждение передачи показывается под названием видео. Громкость телефона независима.
-5. Если воспроизведение вручную продолжено на компьютере, сервис отзывает Android-сеанс. При HTTP 409 приложение ставит Android на паузу и предлагает снова получить сеанс с ПК.
+Наборы `design`, `pip`, `sharing`, `clipboardImages`, `updates` проверяют настоящие Android Activities и системные API. По умолчанию выполняется сценарий Play/Pause с намеренно медленным тестовым ПК. Для `clipboardImages` дополнительно нужен `imagesFixture=synthetic-emulator-only`; он меняет буфер только выделенного эмулятора. [Результаты](../VALIDATION.md), [протокол паузы](../docs/LATENCY.md).
 
-Для автоматической проверки после установки APK можно передать явные extras. Всегда задавайте и `server`, и `token`; реальный ключ не следует сохранять в истории команд или публиковать.
+## Границы
 
-```text
-adb shell am start -n dev.potplayer.handoff/.MainActivity --es server '<IP:порт>' --es token '<ключ>' --ez autoStart true
-```
+Исходные локальные файлы передаются без транскодирования; аппаратное декодирование зависит от устройства и кодека. Переносятся встроенные дорожки, внешние subtitle-файлы пока не передаются. Громкость остаётся локальной. Возможности возврата настроек определяет выбранный ПК-плеер.
 
-## Устройство кода
+YouTube требует доступа к официальному плееру и разрешённого встраивания ролика. При уходе с его экрана приложение ставит видео на паузу; PiP используется для локального видео. [Коннектор](../docs/YOUTUBE_CONNECTOR.md).
 
-- `ApiClient`: блокирующий HTTP с Bearer authentication, таймаутами, ограничением размера ответа и запретом redirect для ключа.
-- `SessionState` и `ProgressUpdate`: проверенный ответ сервиса и снимок состояния с 64-битными миллисекундами/sequence.
-- `PlaybackController`: единственный владелец LibVLC на main thread, очередь и native track IDs, преобразование задержки ms ↔ µs.
-- `MainActivity`: интерфейс, один последовательный network executor и heartbeat каждые две секунды при активном Android-просмотре.
-- `ReceiverUi` и XML: отдельные экраны подключения и просмотра, управление системными панелями, жестами и автоскрытием.
-- `PlayerSheets`: полупрозрачные панели Material, полностью раскрывающиеся и в альбомной ориентации.
-- `PairingCode` и `QrScannerActivity`: проверка versioned URI и камера ZXing. Разрешение камеры запрашивается только при запуске сканера.
+LibVLC 3.7.7 проходит ZIP/ELF PT_LOAD alignment 16 КБ, но пять из шести native-библиотек не проходят дополнительную проверку конца GNU_RELRO на границу 16 КБ. Полная совместимость со всеми такими устройствами не заявляется. `verify-apk.ps1 -StrictRelro` фиксирует это как ошибку; бинарные библиотеки не исправлялись вручную.
 
-QR-коды декодируются локально, без Google Play Services. `QrDecoderTest`
-использует QR-матрицу Python-сервера и настоящий ZXing-декодер.
-В 0.2.2 Play после обычной паузы немедленно продолжает буфер, а состояние ПК
-проверяется в фоне. Если на ПК изменили просмотр, ресивер подхватит его
-актуальное состояние. Повторная пауза во время проверки сохраняется.
-Первое открытие и смена файла требуют подготовки декодера.
-Протокол и нативный тест описаны в [docs/LATENCY.md](../docs/LATENCY.md).
-
-В Android 0.2.1 добавлен пункт **«⋮ → Звук»**: стандартный AudioTrack и
-совместимый OpenSL ES для сравнения на одном устройстве. Режим остаётся
-локальным; переключение сохраняет позицию и дорожки. Также используется
-SoX Resampler с качеством 4, когда требуется пересчёт частоты. Подробности и
-границы изменения — в [docs/AUDIO.md](../docs/AUDIO.md).
-
-Событие buffering не считается пользовательской паузой. Финальная передача при паузе повторяется до трёх раз с тем же sequence, затем показывается кнопка повтора. При новом состоянии sequence увеличивается, старый неотправленный снимок отменяется. `takeover` и `resume` автоматически не повторяются: повторный вызов создаёт новый сеанс. При обычном resume прогресс новой паузы отправляется после получения нового session ID.
-
-## Границы прототипа
-
-- Это клиент для доверенной домашней LAN. HTTP без TLS разрешён для локального сервиса; ключ и media URLs защищают доступ, но не шифруют Wi-Fi. Приложение не открывает порты роутера.
-- Android должен иметь доступ к работающему Windows-компьютеру. Приложение передаёт/получает поток исходного файла; оно не скачивает всю медиатеку для offline-просмотра.
-- Отсутствие сети показывается в статусе. Последнюю паузу нельзя гарантированно доставить после принудительного уничтожения процесса Android или отключения питания. Периодический progress уменьшает потерю позиции до последнего доставленного снимка.
-- Порядок дорожек сопоставляется с ffprobe отдельно для audio и subtitle, пропуская synthetic `Disable` в LibVLC. Уникальные названия дорожек и метаданные title/language используются при смене серии. Для нестандартных splitters, переименованных или неоднозначных озвучек автоматическое совпадение не гарантировано: выбор необходимо проверить в списке. Не следует приравнивать native VLC IDs к ffprobe stream indexes.
-- Embedded MKV/MP4 tracks обслуживает LibVLC. Автоматическая загрузка произвольного внешнего subtitle-файла, которого нет в API media items, пока не реализована.
-- Поддержка конкретного codec/profile и hardware decoding зависит от Android-устройства. Наличие LibVLC не заменяет проверку на физическом телефоне. Видеопоток не транскодируется Windows-сервисом.
-- Скорость можно менять локально на Android; её применение обратно на ПК зависит от поддержки IPC установленной версией PotPlayer. Громкость строго локальная.
-
-## Проверка native alignment
-
-LibVLC обновлён с 3.6.1 до 3.7.7: старые `.so` имели `PT_LOAD p_align=4096`, новые библиотеки для `arm64-v8a` и `x86_64` имеют `p_align=16384`. Это устраняет известное ограничение 4 КБ в load segments. APK проверяются также официальным `zipalign -c -P 16 4` и `apksigner verify`.
-
-Полную совместимость с устройствами с memory page size 16 КБ пока обещать нельзя. У пяти из шести `.so` LibVLC 3.7.7 вычисление `(GNU_RELRO.vaddr + GNU_RELRO.memsz) % 16384` даёт ненулевой остаток. [Современная документация Android](https://developer.android.com/guide/practices/page-sizes#relro) требует проверить и этот параметр, а затем фактическое выполнение в 16-КБ окружении. Загрузка APK на 4-КБ эмуляторе или `zipalign` сами по себе такую совместимость не доказывают.
-
-`verify-apk.ps1 -StrictRelro` включает этот дополнительный строгий guard и завершается ошибкой для текущего AAR. По умолчанию проверка фиксирует RELRO отдельно и проверяет подпись, ABI, ZIP и PT_LOAD. Для окончательной проверки конкретного телефона нужно получить `adb shell getconf PAGE_SIZE` и выполнить на нём playback/handoff; физический OnePlus в этой работе не подключался.
-
-## Первичные источники
-
-- [LibVLC Android source](https://code.videolan.org/videolan/vlc-android)
-- [Exact LibVLC 3.7.7 Java sources](https://repo.maven.apache.org/maven2/org/videolan/android/libvlc-all/3.7.7/libvlc-all-3.7.7-sources.jar)
-- [Android Gradle Plugin 8.10 compatibility](https://developer.android.com/build/releases/agp-8-10-0-release-notes)
-- [SDK manager](https://developer.android.com/tools/sdkmanager)
-- [Third-party notices](THIRD_PARTY_NOTICES.md)
-
-
-С версии 0.3.0 доступны двусторонний буфер/вкладки, системный мини-плеер и OTA из стабильного GitHub Release. Публичный release подписан постоянным ключом через GitHub Actions Secrets. Подробности: ../docs/RELEASING.md.
+[Звук](../docs/AUDIO.md) · [Подключение](../docs/PAIRING.md) · [Лицензии](../THIRD_PARTY_NOTICES.md)

@@ -1,9 +1,2 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <color name="background">#111214</color><color name="surface">#1C1E21</color>
-    <color name="surface_high">#292B2F</color><color name="amber">#FFD34E</color>
-    <color name="ink">#181A1E</color><color name="text_primary">#F6F5EF</color>
-    <color name="text_secondary">#A4A7AD</color><color name="green">#8BD5AF</color>
-    <color name="zxing_viewfinder_laser">#FFD34E</color>
-    <color name="zxing_viewfinder_mask">#99000000</color>
-</resources>
+<?xml version="1.0" encoding="utf-8"?><resources>
+<color name="background">#101216</color><color name="surface">#191D24</color><color name="surface_high">#262B35</color><color name="amber">#F4C75B</color><color name="ink">#17191E</color><color name="text_primary">#F9F6EF</color><color name="text_secondary">#9CA4B3</color><color name="green">#8BD5AF</color><color name="zxing_viewfinder_laser">#F4C75B</color><color name="zxing_viewfinder_mask">#B3101216</color></resources>

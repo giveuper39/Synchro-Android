@@ -10,7 +10,7 @@ checks alone does not establish complete 16 KB runtime compatibility.
 #>
 [CmdletBinding()]
 param(
-    [string]$ApkDirectory = (Join-Path $PSScriptRoot 'app\build\outputs\apk\debug'),
+    [string]$ApkDirectory,
     [string]$JavaHome = $env:JAVA_HOME,
     [string]$AndroidHome = (Join-Path (Split-Path -Parent $PSScriptRoot) '.tools\android-sdk'),
     [string]$BuildToolsVersion = '35.0.0',
@@ -20,6 +20,9 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+if ([string]::IsNullOrWhiteSpace($ApkDirectory)) {
+    $ApkDirectory = Join-Path $PSScriptRoot "app\build\outputs\apk\$BuildType"
+}
 $PSNativeCommandUseErrorActionPreference = $false
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 

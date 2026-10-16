@@ -13,7 +13,7 @@
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true"
         android:supportsRtl="true">
-        <activity android:name=".MainActivity"
+        <activity android:name="dev.synchro.app.MainActivity"
             android:exported="true"
             android:launchMode="singleTop"
             android:supportsPictureInPicture="true"
@@ -27,23 +27,32 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="synchro" android:host="pair" />
                 <data android:scheme="potplayerreceiver" android:host="pair" />
                 <data android:scheme="syncro" android:host="pair" />
             </intent-filter>
         </activity>
-        <activity android:name=".QrScannerActivity" android:exported="false"
+        <activity android:name="dev.synchro.app.QrScannerActivity" android:exported="false"
             android:screenOrientation="portrait" android:theme="@style/ScannerTheme" />
-        <activity android:name=".UpdateActivity" android:exported="false" />
+        <activity android:name="dev.synchro.app.UpdateActivity" android:exported="false" />
+        <activity android:name="dev.synchro.app.YouTubeActivity" android:exported="false"
+            android:configChanges="orientation|screenSize|keyboardHidden|smallestScreenSize|screenLayout" />
+        <receiver android:name="dev.synchro.app.ClipboardImageReceiver" android:exported="true" android:permission="android.permission.DUMP" />
+        <provider android:name="androidx.core.content.FileProvider" android:authorities="${applicationId}.clipboard"
+            android:exported="false" android:grantUriPermissions="true">
+            <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/clipboard_paths" />
+        </provider>
         <provider android:name="androidx.core.content.FileProvider" android:authorities="${applicationId}.updates"
             android:exported="false" android:grantUriPermissions="true">
             <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/update_paths" />
         </provider>
-        <activity android:name=".SyncActivity" android:exported="true" android:launchMode="singleTop"
+        <activity android:name="dev.synchro.app.SyncActivity" android:exported="true" android:launchMode="singleTop"
             android:taskAffinity="dev.potplayer.handoff.sharing" android:excludeFromRecents="true">
             <intent-filter>
                 <action android:name="android.intent.action.SEND"/>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <data android:mimeType="text/plain"/>
+                <data android:mimeType="image/*"/>
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.PROCESS_TEXT"/>
@@ -51,6 +60,7 @@
                 <data android:mimeType="text/plain"/>
             </intent-filter>
         </activity>
+        <activity-alias android:name="dev.potplayer.handoff.MainActivity" android:targetActivity="dev.synchro.app.MainActivity" android:exported="true" />
     </application>
     <queries><package android:name="com.opera.browser"/><intent><action android:name="android.intent.action.VIEW"/><data android:scheme="https"/></intent></queries>
 </manifest>

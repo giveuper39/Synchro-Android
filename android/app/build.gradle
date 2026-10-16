@@ -1,15 +1,15 @@
 plugins { id 'com.android.application' }
 
 android {
-    namespace 'dev.potplayer.handoff'
+    namespace 'dev.synchro.app'
     compileSdk 36
     defaultConfig {
         applicationId 'dev.potplayer.handoff'
         minSdk 26
         targetSdk 35
-        versionCode 6
-        versionName '0.3.0'
-        testInstrumentationRunner 'dev.potplayer.handoff.PlaybackLatencyInstrumentation'
+        versionCode 7
+        versionName '0.4.0'
+        testInstrumentationRunner 'dev.synchro.app.PlaybackLatencyInstrumentation'
         ndk { abiFilters 'arm64-v8a', 'x86_64' }
     }
     compileOptions {
@@ -28,12 +28,12 @@ android {
         debug { minifyEnabled false }
         release {
             minifyEnabled false
-            if (System.getenv('SYNCRO_KEYSTORE')) {
+            if (System.getenv('SYNCHRO_KEYSTORE')) {
                 signingConfig signingConfigs.create('production') {
-                    storeFile file(System.getenv('SYNCRO_KEYSTORE'))
-                    storePassword System.getenv('SYNCRO_STORE_PASSWORD')
-                    keyAlias System.getenv('SYNCRO_KEY_ALIAS')
-                    keyPassword System.getenv('SYNCRO_KEY_PASSWORD')
+                    storeFile file(System.getenv('SYNCHRO_KEYSTORE'))
+                    storePassword System.getenv('SYNCHRO_STORE_PASSWORD')
+                    keyAlias System.getenv('SYNCHRO_KEY_ALIAS')
+                    keyPassword System.getenv('SYNCHRO_KEY_PASSWORD')
                 }
             }
         }
