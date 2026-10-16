@@ -8,7 +8,9 @@ import android.os.SystemClock;
 import android.view.View;
 import java.lang.reflect.Field;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import org.json.JSONObject;
+import org.videolan.libvlc.interfaces.IMedia;
 import org.videolan.libvlc.MediaPlayer;
 
 /**
@@ -57,6 +59,30 @@ public final class PlaybackLatencyInstrumentation extends Instrumentation {
           if (!button.isShown()) activity.findViewById(R.id.video_touch).performClick();
           button.performClick();
         });
+  }
+
+  private boolean resumeFinished() {
+    try {
+      return !(boolean) field(activity, "requestInFlight");
+    } catch (Exception error) {
+      throw new AssertionError(error);
+    }
+  }
+
+  private IMedia currentMedia() {
+    AtomicReference<IMedia> result = new AtomicReference<>();
+    runOnMainSync(() -> result.set(nativePlayer.getMedia()));
+    return result.get();
+  }
+
+  private void assertSameMedia(IMedia expected) {
+    IMedia actual = currentMedia();
+    try {
+      if (expected != actual)
+        throw new AssertionError("Same-file resume replaced the native Media");
+    } finally {
+      if (actual != null) actual.release();
+    }
   }
 
   private JSONObject request(String path, JSONObject body) throws Exception {
@@ -148,6 +174,32 @@ public final class PlaybackLatencyInstrumentation extends Instrumentation {
       await(() -> !playback.isPaused() && nativePlayer.isPlaying());
       result.putLong("resumeMs", SystemClock.elapsedRealtime() - started);
       SystemClock.sleep(1000);
+
+      click();
+      await(() -> playback.isPaused() && !nativePlayer.isPlaying());
+      awaitPc();
+      IMedia buffered = currentMedia();
+      try {
+        // A settings edit makes resumeInPlace false, but does not change the file.
+        request("/test/pc", new JSONObject().put("subtitle_delay_ms", 450).put("rate", 1.25));
+        click();
+        await(() -> resumeFinished() && !playback.isPaused() && nativePlayer.isPlaying());
+        assertSameMedia(buffered);
+        if (!onMain(() -> playback.subtitleDelayMs() == 450 && nativePlayer.getRate() == 1.25f))
+          throw new AssertionError("Same-file PC settings were not applied");
+        result.putBoolean("pcSettingsKeptNativeMedia", true);
+
+        click();
+        await(() -> playback.isPaused() && !nativePlayer.isPlaying());
+        awaitPc();
+        request("/test/pc", new JSONObject().put("position_ms", 45000).put("rate", 1));
+        click();
+        await(() -> resumeFinished() && Math.abs(nativePlayer.getTime() - 45000) < 2500);
+        assertSameMedia(buffered);
+        result.putBoolean("pcSeekKeptNativeMedia", true);
+      } finally {
+        if (buffered != null) buffered.release();
+      }
 
       click();
       await(() -> playback.isPaused() && !nativePlayer.isPlaying());

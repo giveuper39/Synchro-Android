@@ -65,6 +65,7 @@ public final class PlaybackController {
   private boolean subtitleApplied;
   private boolean paused = true;
   private long positionMs;
+  private long resumeAnchorMs;
   private long seekRequestedAt;
   private long loadedAt;
   private boolean startupReported;
@@ -205,13 +206,39 @@ public final class PlaybackController {
         canResumeBuffered()
             && session.items.get(index).id.equals(state.items.get(state.index).id)
             && session.items.get(index).url.equals(state.items.get(state.index).url);
-    if (state.resumeInPlace && sameMedia) {
-      session = state;
-      index = state.index;
-      listener.onChanged();
-    } else {
+    if (!sameMedia) {
+      android.util.Log.i("SynchroStartup", "resumeBufferReused=false");
       accept(state, paused);
+      return;
     }
+    // The ownership check can differ because of a PC track/delay/rate edit.
+    // That does not require a new Media or hardware decoder for the same file.
+    boolean seekRequired =
+        !state.resumeInPlace && Math.abs(state.positionMs - resumeAnchorMs) > 250;
+    if (audioIndex != state.audioIndex) audioApplied = false;
+    if (subtitleEnabled != state.subtitleEnabled || subtitleIndex != state.subtitleIndex)
+      subtitleApplied = false;
+    boolean delayChanged = subtitleDelayMs != state.subtitleDelayMs;
+    boolean rateChanged = Float.compare(rate, state.rate) != 0;
+    session = state;
+    index = state.index;
+    audioIndex = state.audioIndex;
+    subtitleIndex = state.subtitleIndex;
+    subtitleEnabled = state.subtitleEnabled;
+    subtitleDelayMs = state.subtitleDelayMs;
+    rate = state.rate;
+    applyPendingTracks();
+    if (delayChanged) player.setSpuDelay(subtitleDelayMs * 1000L);
+    if (rateChanged) player.setRate(rate);
+    if (seekRequired) {
+      positionMs = state.positionMs;
+      seekRequestedAt = SystemClock.elapsedRealtime();
+      player.setTime(positionMs, false);
+    }
+    android.util.Log.i(
+        "SynchroStartup",
+        "resumeBufferReused=true serverMatch=" + state.resumeInPlace + " seek=" + seekRequired);
+    listener.onChanged();
   }
 
   private void load(int nextIndex, long startMs, boolean preserveTrackIdentity) {
@@ -337,7 +364,8 @@ public final class PlaybackController {
     if (!audioApplied && !audio.isEmpty()) {
       Track requested = findOrdinal(audio, audioIndex);
       if (requested != null) {
-        audioApplied = player.setAudioTrack(requested.vlcId);
+        audioApplied =
+            player.getAudioTrack() == requested.vlcId || player.setAudioTrack(requested.vlcId);
       } else if (audioIndex < 0) {
         audioIndex = ordinalForId(audio, player.getAudioTrack());
         audioApplied = true;
@@ -350,9 +378,10 @@ public final class PlaybackController {
     List<Track> subtitles = subtitleTracks();
     if (!subtitleApplied) {
       Track requested = findOrdinal(subtitles, subtitleIndex);
-      if (!subtitleEnabled) subtitleApplied = player.setSpuTrack(-1);
+      if (!subtitleEnabled) subtitleApplied = player.getSpuTrack() == -1 || player.setSpuTrack(-1);
       else if (requested != null) {
-        subtitleApplied = player.setSpuTrack(requested.vlcId);
+        subtitleApplied =
+            player.getSpuTrack() == requested.vlcId || player.setSpuTrack(requested.vlcId);
       } else if (subtitleIndex < 0 && !subtitles.isEmpty()) {
         int selected = ordinalForId(subtitles, player.getSpuTrack());
         subtitleIndex = selected >= 0 ? selected : subtitles.get(0).ordinal;
@@ -464,6 +493,7 @@ public final class PlaybackController {
 
   public void resume() {
     if (!hasSession()) return;
+    resumeAnchorMs = positionMs;
     paused = false;
     player.play();
     listener.onChanged();
